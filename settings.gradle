@@ -1,0 +1,3 @@
+rootProject.name = 'fabric3-gradle-plugins'
+
+include ':fabric3-contribution'

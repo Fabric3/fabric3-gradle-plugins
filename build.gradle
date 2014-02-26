@@ -1,0 +1,65 @@
+/**
+ * Build for Fabric3 Gradle plugins
+ */
+project.description = 'Fabric3 Gradle plugins'
+
+allprojects {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+
+}
+
+def distributions() {
+    // define projects that are distributions, i.e. they contain source files; project parent directories will be ignored
+    return subprojects.findAll { new File(it.projectDir, "src").exists() }
+}
+
+configure(distributions()) {
+    apply plugin: 'java'
+    apply plugin: 'maven'
+    apply plugin: 'signing'
+
+    group = 'org.codehaus.fabric3.gradle'
+
+    dependencies {
+        compile gradleApi()
+        testCompile 'junit:junit:4.5'
+    }
+
+    task sourcesJar(type: Jar) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
+
+    task docJar(type: Jar, dependsOn: javadoc) {
+        classifier = 'docs'
+        from javadoc.destinationDir
+    }
+
+    artifacts {
+        archives sourcesJar
+        archives docJar
+    }
+
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+//                repository(url: 'file:./maven')
+            }
+        }
+    }
+
+    signing {
+        required {
+            !version.endsWith('SNAPSHOT') && gradle.taskGraph.hasTask('uploadArchives')
+        }
+        sign configurations.archives
+    }
+
+
+}
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.11'
+}
