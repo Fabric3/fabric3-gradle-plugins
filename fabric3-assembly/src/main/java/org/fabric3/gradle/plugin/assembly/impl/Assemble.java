@@ -79,6 +79,8 @@ public class Assemble extends Zip {
         this.progressLogger = progressLoggerFactory.newOperation("fabric3Assembly");
     }
 
+
+
     protected void copy() {
         init();
         try {

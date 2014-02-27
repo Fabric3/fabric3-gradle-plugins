@@ -70,7 +70,7 @@ import static org.fabric3.gradle.plugin.core.Constants.FABRIC3_GROUP;
 import static org.fabric3.gradle.plugin.core.Constants.FABRIC3_VERSION;
 
 /**
- * Extends the Zip task to add packager-specific build tasks including runtime resolution, configuration, profile installation and extension installation.
+ * Extends the War task to add packager-specific build tasks including runtime resolution, configuration, profile installation and extension installation.
  */
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public class Package extends War {

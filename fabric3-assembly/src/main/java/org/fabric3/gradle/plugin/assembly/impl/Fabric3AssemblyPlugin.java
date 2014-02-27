@@ -38,11 +38,13 @@
 package org.fabric3.gradle.plugin.assembly.impl;
 
 import javax.inject.Inject;
+import java.io.File;
 
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.internal.artifacts.publish.ArchivePublishArtifact;
+import org.gradle.api.internal.file.collections.SimpleFileCollection;
 import org.gradle.api.internal.java.JavaLibrary;
 import org.gradle.api.internal.plugins.DefaultArtifactPublicationSet;
 import org.gradle.api.plugins.BasePlugin;
@@ -54,6 +56,11 @@ import org.gradle.api.tasks.bundling.Zip;
  * Creates a Fabric3 runtime distribution.
  */
 public class Fabric3AssemblyPlugin implements Plugin<Project> {
+    /**
+     * Marker that forces the Assembly task to be executed if no source files are present. If this marker is not added to the task input sources, the Gradle
+     * <code>SkipEmptySourceFilesTaskExecuter</code> will skip execution of the task if the sources are empty.
+     */
+    private static final SimpleFileCollection REBUILD_MARKER = new SimpleFileCollection(new File("--"));
 
     @Inject
     public void apply(final Project project) {
@@ -62,6 +69,7 @@ public class Fabric3AssemblyPlugin implements Plugin<Project> {
         Zip zip = project.getTasks().create("fabric3Assembly", Assemble.class);
         zip.setDescription("Assembles a Fabric3 runtime image.");
         zip.setGroup(BasePlugin.BUILD_GROUP);
+        zip.getInputs().source(REBUILD_MARKER);
 
         JavaPluginConvention convention = project.getConvention().getPlugin(JavaPluginConvention.class);
         zip.from(convention.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME).getOutput());

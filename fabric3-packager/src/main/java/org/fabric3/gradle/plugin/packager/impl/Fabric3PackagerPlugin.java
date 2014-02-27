@@ -50,6 +50,7 @@ import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.bundling.War;
+import static org.fabric3.gradle.plugin.packager.impl.PackagerPluginConvention.FABRIC3_PACKAGER_CONVENTION;
 
 /**
  * Packages a Fabric3 node runtime distribution.
@@ -58,7 +59,7 @@ public class Fabric3PackagerPlugin implements Plugin<Project> {
 
     @Inject
     public void apply(final Project project) {
-        PackagerPluginConvention convention = project.getConvention().create(PackagerPluginConvention.FABRIC3_PACKAGER_CONVENTION, PackagerPluginConvention.class);
+        PackagerPluginConvention convention = project.getConvention().create(FABRIC3_PACKAGER_CONVENTION, PackagerPluginConvention.class);
         addDefaultExtensions(convention);
 
         War zip = project.getTasks().create("fabric3Packager", Package.class);
@@ -77,7 +78,6 @@ public class Fabric3PackagerPlugin implements Plugin<Project> {
         project.getComponents().add(library);
 
     }
-
 
     private void addDefaultExtensions(PackagerPluginConvention convention) {
         convention.extension(Constants.FABRIC3_GROUP + ":" + "fabric3-databinding-json" + ":" + Constants.FABRIC3_VERSION);
