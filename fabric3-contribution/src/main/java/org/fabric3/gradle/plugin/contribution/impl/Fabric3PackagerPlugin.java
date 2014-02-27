@@ -35,10 +35,11 @@
  * GNU General Public License along with Fabric3.
  * If not, see <http://www.gnu.org/licenses/>.
 */
-package org.fabric3.gradle.plugin.assembly.impl;
+package org.fabric3.gradle.plugin.contribution.impl;
 
 import javax.inject.Inject;
 
+import org.fabric3.gradle.plugin.core.Constants;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
@@ -48,23 +49,25 @@ import org.gradle.api.internal.plugins.DefaultArtifactPublicationSet;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.tasks.SourceSet;
-import org.gradle.api.tasks.bundling.Zip;
+import org.gradle.api.tasks.bundling.War;
+import static org.fabric3.gradle.plugin.contribution.impl.PackagerPluginConvention.FABRIC3_PACKAGER_CONVENTION;
 
 /**
- * Creates a Fabric3 runtime distribution.
+ * Packages a Fabric3 node runtime distribution.
  */
-public class Fabric3AssemblyPlugin implements Plugin<Project> {
+public class Fabric3PackagerPlugin implements Plugin<Project> {
 
     @Inject
     public void apply(final Project project) {
-        project.getConvention().add(AssemblyPluginConvention.FABRIC3_ASSEMBLY_CONVENTION, AssemblyPluginConvention.class);
+        PackagerPluginConvention convention = project.getConvention().create(FABRIC3_PACKAGER_CONVENTION, PackagerPluginConvention.class);
+        addDefaultExtensions(convention);
 
-        Zip zip = project.getTasks().create("fabric3Assembly", Assemble.class);
-        zip.setDescription("Assembles a Fabric3 runtime image.");
+        War zip = project.getTasks().create("fabric3Packager", Package.class);
+        zip.setDescription("Packages a Fabric3 node runtime image.");
         zip.setGroup(BasePlugin.BUILD_GROUP);
 
-        JavaPluginConvention convention = project.getConvention().getPlugin(JavaPluginConvention.class);
-        zip.from(convention.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME).getOutput());
+        JavaPluginConvention javaConvention = project.getConvention().getPlugin(JavaPluginConvention.class);
+        zip.from(javaConvention.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME).getOutput());
         zip.setExtension("zip");
         Configuration runtimeConfiguration = project.getConfigurations().getByName("runtime");
         ArchivePublishArtifact artifact = new ArchivePublishArtifact(zip);
@@ -74,6 +77,12 @@ public class Fabric3AssemblyPlugin implements Plugin<Project> {
         JavaLibrary library = new JavaLibrary(artifact, runtimeConfiguration.getAllDependencies());
         project.getComponents().add(library);
 
+    }
+
+
+    private void addDefaultExtensions(PackagerPluginConvention convention) {
+        convention.extension(Constants.FABRIC3_GROUP + ":" + "fabric3-databinding-json" + ":" + Constants.FABRIC3_VERSION);
+        convention.extension(Constants.FABRIC3_GROUP + ":" + "fabric3-node-servlet" + ":" + Constants.FABRIC3_VERSION);
     }
 
 }

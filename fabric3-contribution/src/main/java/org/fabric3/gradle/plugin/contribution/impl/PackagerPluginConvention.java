@@ -35,7 +35,7 @@
  * GNU General Public License along with Fabric3.
  * If not, see <http://www.gnu.org/licenses/>.
 */
-package org.fabric3.gradle.plugin.assembly.impl;
+package org.fabric3.gradle.plugin.contribution.impl;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -51,8 +51,8 @@ import static org.fabric3.gradle.plugin.core.util.ArtifactConverter.convert;
 /**
  *
  */
-public class AssemblyPluginConvention {
-    public static final String FABRIC3_ASSEMBLY_CONVENTION = "fabric3Assembly";
+public class PackagerPluginConvention {
+    public static final String FABRIC3_PACKAGER_CONVENTION = "fabric3Packager";
 
     private String systemConfig;
 

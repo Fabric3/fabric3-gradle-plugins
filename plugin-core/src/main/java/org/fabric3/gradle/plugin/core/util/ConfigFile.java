@@ -35,7 +35,7 @@
  * GNU General Public License along with Fabric3.
  * If not, see <http://www.gnu.org/licenses/>.
 */
-package org.fabric3.gradle.plugin.assembly.impl;
+package org.fabric3.gradle.plugin.core.util;
 
 /**
  * Specifies a configuration file to be copied.

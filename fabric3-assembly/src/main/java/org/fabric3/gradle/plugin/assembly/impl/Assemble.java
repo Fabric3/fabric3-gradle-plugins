@@ -38,18 +38,9 @@
 package org.fabric3.gradle.plugin.assembly.impl;
 
 import javax.inject.Inject;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Enumeration;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
@@ -60,6 +51,7 @@ import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
 import org.fabric3.gradle.plugin.core.resolver.AetherBootstrap;
+import org.fabric3.gradle.plugin.core.util.ConfigFile;
 import org.fabric3.gradle.plugin.core.util.FileHelper;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
@@ -67,14 +59,13 @@ import org.gradle.api.tasks.bundling.Zip;
 import org.gradle.internal.service.ServiceRegistry;
 import org.gradle.logging.ProgressLogger;
 import org.gradle.logging.ProgressLoggerFactory;
+import static org.fabric3.gradle.plugin.core.Constants.FABRIC3_GROUP;
 
 /**
  * Extends the Zip task to add assembly-specific build tasks including runtime resolution, configuration, profile installation and extension installation.
  */
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public class Assemble extends Zip {
-    public static final String FABRIC3_GROUP = "org.codehaus.fabric3";
-    private static final int BUFFER = 2048;
 
     private ProgressLogger progressLogger;
     private File imageDir;
@@ -166,7 +157,7 @@ public class Assemble extends Zip {
             File targetDir = new File(imageDir, file.getDestination());
             File target = new File(targetDir, source.getName());
             target.mkdirs();
-            copy(source, target);
+            FileHelper.copy(source, target);
         }
     }
 
@@ -181,7 +172,7 @@ public class Assemble extends Zip {
             File source = result.getArtifact().getFile();
 
             File target = new File(repository, source.getName());
-            copy(source, target);
+            FileHelper.copy(source, target);
         }
 
         for (Project project : convention.getProjectContributions()) {
@@ -208,7 +199,7 @@ public class Assemble extends Zip {
                 source = files[0];
             }
             File target = new File(repository, source.getName());
-            copy(source, target);
+            FileHelper.copy(source, target);
         }
     }
 
@@ -226,7 +217,7 @@ public class Assemble extends Zip {
             ArtifactResult result = system.resolveArtifact(session, new ArtifactRequest(artifact, null, null));
             File source = result.getArtifact().getFile();
             File target = new File(datasourceDir, source.getName());
-            copy(source, target);
+            FileHelper.copy(source, target);
         }
 
     }
@@ -236,21 +227,21 @@ public class Assemble extends Zip {
         for (Artifact artifact : convention.getExtensions()) {
             progressLogger.progress("Installing " + artifact.toString());
             File source = resolve(artifact);
-            copy(source, new File(extensionDir, source.getName()));
+            FileHelper.copy(source, new File(extensionDir, source.getName()));
         }
     }
 
     private void installProfiles() throws IOException {
         for (Artifact profile : convention.getProfiles()) {
             progressLogger.progress("Installing " + profile.toString());
-            extract(resolve(profile), imageDir);
+            FileHelper.extract(resolve(profile), imageDir);
         }
     }
 
     private void installRuntime() throws IOException {
         progressLogger.progress("Installing the runtime");
         DefaultArtifact runtimeArtifact = new DefaultArtifact(FABRIC3_GROUP, "runtime-standalone", "bin", "zip", convention.getRuntimeVersion());
-        extract(resolve(runtimeArtifact), imageDir);
+        FileHelper.extract(resolve(runtimeArtifact), imageDir);
     }
 
     private File resolve(Artifact artifact) {
@@ -266,53 +257,5 @@ public class Assemble extends Zip {
         }
     }
 
-    /**
-     * Extracts the contents of a zip file to a target directory.
-     *
-     * @param source      the zip file
-     * @param destination the target directory
-     * @throws IOException if there is an error during extraction
-     */
-    private void extract(File source, File destination) throws IOException {
-        ZipFile zipfile;
-        zipfile = new ZipFile(source);
-        Enumeration enumeration = zipfile.entries();
-        while (enumeration.hasMoreElements()) {
-            ZipEntry entry = (ZipEntry) enumeration.nextElement();
-            String name = entry.getName();
-            if (entry.isDirectory()) {
-                new File(destination, name).mkdirs();
-            } else {
-                if (name.toUpperCase().endsWith(".MF")) {
-                    // ignore manifests
-                    continue;
-                }
-                File outputFile = new File(destination, name);
-                try (InputStream sourceStream = new BufferedInputStream(zipfile.getInputStream(entry));
-                     OutputStream targetStream = new BufferedOutputStream(new FileOutputStream(outputFile), BUFFER)) {
-                    copy(sourceStream, targetStream);
-                    targetStream.flush();
-                }
-            }
-        }
-    }
-
-    private void copy(File source, File target) throws IOException {
-        try (InputStream sourceStream = new BufferedInputStream(new FileInputStream(source));
-             OutputStream targetStream = new BufferedOutputStream(new FileOutputStream(target))) {
-            copy(sourceStream, targetStream);
-        }
-    }
-
-    private int copy(InputStream input, OutputStream output) throws IOException {
-        byte[] buffer = new byte[BUFFER];
-        int count = 0;
-        int n;
-        while (-1 != (n = input.read(buffer))) {
-            output.write(buffer, 0, n);
-            count += n;
-        }
-        return count;
-    }
 
 }

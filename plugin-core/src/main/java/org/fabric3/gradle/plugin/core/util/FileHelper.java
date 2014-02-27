@@ -41,16 +41,74 @@ package org.fabric3.gradle.plugin.core.util;
  *
  */
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Enumeration;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
  * Helper methods for working with files.
  */
 public class FileHelper {
+    public static final int BUFFER = 2048;
 
     protected FileHelper() {
+    }
+
+    /**
+     * Extracts the contents of a zip file to a target directory.
+     *
+     * @param source      the zip file
+     * @param destination the target directory
+     * @throws IOException if there is an error during extraction
+     */
+    public static void extract(File source, File destination) throws IOException {
+        ZipFile zipfile;
+        zipfile = new ZipFile(source);
+        Enumeration enumeration = zipfile.entries();
+        while (enumeration.hasMoreElements()) {
+            ZipEntry entry = (ZipEntry) enumeration.nextElement();
+            String name = entry.getName();
+            if (entry.isDirectory()) {
+                new File(destination, name).mkdirs();
+            } else {
+                if (name.toUpperCase().endsWith(".MF")) {
+                    // ignore manifests
+                    continue;
+                }
+                File outputFile = new File(destination, name);
+                try (InputStream sourceStream = new BufferedInputStream(zipfile.getInputStream(entry));
+                     OutputStream targetStream = new BufferedOutputStream(new FileOutputStream(outputFile), FileHelper.BUFFER)) {
+                    FileHelper.copy(sourceStream, targetStream);
+                    targetStream.flush();
+                }
+            }
+        }
+    }
+    public static void copy(File source, File target) throws IOException {
+        try (InputStream sourceStream = new BufferedInputStream(new FileInputStream(source));
+             OutputStream targetStream = new BufferedOutputStream(new FileOutputStream(target))) {
+            copy(sourceStream, targetStream);
+        }
+    }
+
+    public static int copy(InputStream input, OutputStream output) throws IOException {
+        byte[] buffer = new byte[BUFFER];
+        int count = 0;
+        int n;
+        while (-1 != (n = input.read(buffer))) {
+            output.write(buffer, 0, n);
+            count += n;
+        }
+        return count;
     }
 
     /**
