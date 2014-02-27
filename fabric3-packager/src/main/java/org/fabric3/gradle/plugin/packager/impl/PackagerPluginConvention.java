@@ -35,7 +35,7 @@
  * GNU General Public License along with Fabric3.
  * If not, see <http://www.gnu.org/licenses/>.
 */
-package org.fabric3.gradle.plugin.contribution.impl;
+package org.fabric3.gradle.plugin.packager.impl;
 
 import java.util.HashSet;
 import java.util.Map;
