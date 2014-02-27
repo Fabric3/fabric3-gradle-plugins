@@ -79,8 +79,6 @@ public class Assemble extends Zip {
         this.progressLogger = progressLoggerFactory.newOperation("fabric3Assembly");
     }
 
-
-
     protected void copy() {
         init();
         try {
@@ -153,10 +151,18 @@ public class Assemble extends Zip {
     }
 
     private void installConfiguration() throws IOException {
+        File defaultTargetDir = new File(imageDir, "runtimes" + File.separatorChar + convention.getContributionTarget() + File.separatorChar + "config");
         for (ConfigFile file : convention.getConfigFiles()) {
             // main directory is parent of the build directory
             File source = new File(getProject().getBuildDir().getParent(), file.getSource());
-            File targetDir = new File(imageDir, file.getDestination());
+            // if no target specified, use the default runtime config directory
+            File targetDir;
+            String destination = file.getDestination();
+            if (destination == null) {
+                targetDir = defaultTargetDir;
+            } else {
+                targetDir = new File(imageDir, destination);
+            }
             File target = new File(targetDir, source.getName());
             target.mkdirs();
             FileHelper.copy(source, target);
@@ -258,6 +264,5 @@ public class Assemble extends Zip {
             throw new GradleException(e.getMessage(), e);
         }
     }
-
 
 }

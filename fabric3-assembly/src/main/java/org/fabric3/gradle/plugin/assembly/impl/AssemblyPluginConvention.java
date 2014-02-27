@@ -150,9 +150,6 @@ public class AssemblyPluginConvention {
             throw new IllegalArgumentException("Source not specified for config file");
         }
         String target = file.get("target");
-        if (target == null) {
-            throw new IllegalArgumentException("Target not specified for config file");
-        }
         configFiles.add(new ConfigFile(source, target));
     }
 
