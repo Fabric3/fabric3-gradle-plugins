@@ -65,7 +65,7 @@ import org.gradle.api.tasks.bundling.Jar;
  * directory.
  */
 public class Fabric3ContributionPlugin implements Plugin<Project> {
-    public static final String PROVIDED_COMPILE_CONFIGURATION_NAME = "providedCompile";
+    public static final String PROVIDED_COMPILE = "providedCompile";
 
     @Inject
     public void apply(final Project project) {
@@ -88,7 +88,7 @@ public class Fabric3ContributionPlugin implements Plugin<Project> {
         project.afterEvaluate(new Action<Project>() {
             public void execute(Project project) {
                 FileTree compileTree = project.getConfigurations().getByName("compile").getAsFileTree();
-                Configuration providedCompile = project.getConfigurations().getByName("providedCompile");
+                Configuration providedCompile = project.getConfigurations().getByName(PROVIDED_COMPILE);
                 Set<File> libraries = compileTree.minus(providedCompile).getFiles();
                 contribution.getMetaInf().into("lib").from(libraries);
             }
@@ -98,7 +98,7 @@ public class Fabric3ContributionPlugin implements Plugin<Project> {
     }
 
     public void createConfiguration(ConfigurationContainer container) {
-        Configuration configuration = container.create(PROVIDED_COMPILE_CONFIGURATION_NAME);
+        Configuration configuration = container.create(PROVIDED_COMPILE);
         configuration.setVisible(false);
         configuration.setDescription("Additional compile classpath for libraries that should not be part of the contribution archive.");
         container.getByName(JavaPlugin.COMPILE_CONFIGURATION_NAME).extendsFrom(configuration);

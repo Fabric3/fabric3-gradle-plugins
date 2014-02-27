@@ -1,3 +1,4 @@
+
 dependencies {
     compile group: 'org.eclipse.aether', name: 'aether-api', version: aetherVersion
     compile group: 'org.eclipse.aether', name: 'aether-util', version: aetherVersion
@@ -8,5 +9,4 @@ dependencies {
     compile group: 'org.eclipse.aether', name: 'aether-transport-wagon', version: aetherVersion
     compile group: 'org.apache.maven', name: 'maven-aether-provider', version: '3.1.1'
 
-    compile project(':plugin-core')
 }
