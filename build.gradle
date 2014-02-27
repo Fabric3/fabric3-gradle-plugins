@@ -3,6 +3,8 @@
  */
 project.description = 'Fabric3 Gradle plugins'
 
+defaultTasks 'clean', 'assemble', 'install'
+
 allprojects {
     repositories {
         mavenLocal()
@@ -25,6 +27,16 @@ configure(distributions()) {
 
     dependencies {
         compile gradleApi()
+
+        compile group: 'org.eclipse.aether', name: 'aether-api', version: aetherVersion
+        compile group: 'org.eclipse.aether', name: 'aether-util', version: aetherVersion
+        compile group: 'org.eclipse.aether', name: 'aether-impl', version: aetherVersion
+        compile group: 'org.eclipse.aether', name: 'aether-connector-basic', version: aetherVersion
+        compile group: 'org.eclipse.aether', name: 'aether-transport-file', version: aetherVersion
+        compile group: 'org.eclipse.aether', name: 'aether-transport-http', version: aetherVersion
+        compile group: 'org.eclipse.aether', name: 'aether-transport-wagon', version: aetherVersion
+        compile group: 'org.apache.maven', name: 'maven-aether-provider', version: '3.1.1'
+
         testCompile 'junit:junit:4.5'
     }
 
@@ -60,6 +72,18 @@ configure(distributions()) {
 
 
 }
+
+def plugins() {
+    return subprojects.findAll { project -> project.name.startsWith('fabric3-') }
+}
+
+configure(plugins()) {
+    dependencies {
+        compile project(':plugin-core')
+    }
+}
+
+
 task wrapper(type: Wrapper) {
     gradleVersion = '1.11'
 }
