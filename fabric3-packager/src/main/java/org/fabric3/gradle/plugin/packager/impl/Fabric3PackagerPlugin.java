@@ -38,17 +38,24 @@
 package org.fabric3.gradle.plugin.packager.impl;
 
 import javax.inject.Inject;
+import java.util.concurrent.Callable;
 
 import org.fabric3.gradle.plugin.core.Constants;
+import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.UnknownTaskException;
 import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.artifacts.ConfigurationContainer;
+import org.gradle.api.file.FileCollection;
 import org.gradle.api.internal.artifacts.publish.ArchivePublishArtifact;
 import org.gradle.api.internal.java.JavaLibrary;
 import org.gradle.api.internal.plugins.DefaultArtifactPublicationSet;
 import org.gradle.api.plugins.BasePlugin;
+import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.tasks.SourceSet;
+import org.gradle.api.tasks.bundling.Jar;
 import org.gradle.api.tasks.bundling.War;
 import static org.fabric3.gradle.plugin.packager.impl.PackagerPluginConvention.FABRIC3_PACKAGER_CONVENTION;
 
@@ -56,10 +63,16 @@ import static org.fabric3.gradle.plugin.packager.impl.PackagerPluginConvention.F
  * Packages a Fabric3 node runtime distribution.
  */
 public class Fabric3PackagerPlugin implements Plugin<Project> {
+    public static final String PROVIDED_COMPILE = "providedCompile";
+    public static final String PROVIDED_RUNTIME_CONFIGURATION_NAME = "providedRuntime";
 
     @Inject
     public void apply(final Project project) {
-        PackagerPluginConvention convention = project.getConvention().create(FABRIC3_PACKAGER_CONVENTION, PackagerPluginConvention.class);
+        disableJar(project);
+
+        final PackagerPluginConvention convention = new PackagerPluginConvention(project);
+        project.getConvention().add(FABRIC3_PACKAGER_CONVENTION, convention);
+
         addDefaultExtensions(convention);
 
         War zip = project.getTasks().create("fabric3Packager", Package.class);
@@ -67,8 +80,8 @@ public class Fabric3PackagerPlugin implements Plugin<Project> {
         zip.setGroup(BasePlugin.BUILD_GROUP);
 
         JavaPluginConvention javaConvention = project.getConvention().getPlugin(JavaPluginConvention.class);
+
         zip.from(javaConvention.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME).getOutput());
-        zip.setExtension("zip");
         Configuration runtimeConfiguration = project.getConfigurations().getByName("runtime");
         ArchivePublishArtifact artifact = new ArchivePublishArtifact(zip);
         runtimeConfiguration.getArtifacts().add(artifact);
@@ -77,11 +90,60 @@ public class Fabric3PackagerPlugin implements Plugin<Project> {
         JavaLibrary library = new JavaLibrary(artifact, runtimeConfiguration.getAllDependencies());
         project.getComponents().add(library);
 
+        project.getTasks().withType(War.class, new Action<War>() {
+            public void execute(War task) {
+                task.from(new Callable() {
+                    public Object call() throws Exception {
+                        return convention.getWebAppDir();
+                    }
+                });
+                task.dependsOn(new Callable() {
+                    public Object call() throws Exception {
+                        return project.getConvention().getPlugin(JavaPluginConvention.class).getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME)
+                                .getRuntimeClasspath();
+                    }
+                });
+                task.classpath(new Callable() {
+                    public Object call() throws Exception {
+                        FileCollection runtimeClasspath
+                                = project.getConvention().getPlugin(JavaPluginConvention.class).getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME)
+                                .getRuntimeClasspath();
+                        Configuration providedRuntime = project.getConfigurations().getByName(PROVIDED_RUNTIME_CONFIGURATION_NAME);
+                        return runtimeClasspath.minus(providedRuntime);
+                    }
+                });
+            }
+        });
+
+        createConfiguration(project.getConfigurations());
+    }
+
+    public void createConfiguration(ConfigurationContainer container) {
+        Configuration configuration = container.create(PROVIDED_COMPILE);
+        configuration.setVisible(false);
+        configuration.setDescription("Additional compile classpath for libraries that should not be part of the contribution archive.");
+        container.getByName(JavaPlugin.COMPILE_CONFIGURATION_NAME).extendsFrom(configuration);
+
+        Configuration provideRuntimeConfiguration = container.create(PROVIDED_RUNTIME_CONFIGURATION_NAME).setVisible(false).
+                extendsFrom(configuration).
+                setDescription("Additional runtime classpath for libraries that should not be part of the WAR archive.");
+        container.getByName(JavaPlugin.RUNTIME_CONFIGURATION_NAME).extendsFrom(provideRuntimeConfiguration);
+
     }
 
     private void addDefaultExtensions(PackagerPluginConvention convention) {
         convention.extension(Constants.FABRIC3_GROUP + ":" + "fabric3-databinding-json" + ":" + Constants.FABRIC3_VERSION);
         convention.extension(Constants.FABRIC3_GROUP + ":" + "fabric3-node-servlet" + ":" + Constants.FABRIC3_VERSION);
+    }
+
+    private void disableJar(Project project) {
+        try {
+            // disable the existing jar task to avoid overwriting the contribution plugin war task output
+            Jar jar = (Jar) project.getTasks().getByName("jar");
+            jar.setEnabled(false);
+        } catch (UnknownTaskException e) {
+            // ignore
+        }
     }
 
 }

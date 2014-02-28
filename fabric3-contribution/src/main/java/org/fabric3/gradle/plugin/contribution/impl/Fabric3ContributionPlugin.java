@@ -102,7 +102,7 @@ public class Fabric3ContributionPlugin implements Plugin<Project> {
         createConfiguration(project.getConfigurations());
     }
 
-    public void createConfiguration(ConfigurationContainer container) {
+    private void createConfiguration(ConfigurationContainer container) {
         Configuration configuration = container.create(PROVIDED_COMPILE);
         configuration.setVisible(false);
         configuration.setDescription("Additional compile classpath for libraries that should not be part of the contribution archive.");

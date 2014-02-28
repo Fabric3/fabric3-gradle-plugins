@@ -41,17 +41,20 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import groovy.lang.MetaClass;
+import org.codehaus.groovy.runtime.InvokerHelper;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.fabric3.gradle.plugin.core.Constants;
 import org.fabric3.gradle.plugin.core.util.ConfigFile;
 import org.gradle.api.Project;
+import org.gradle.api.plugins.WarPluginConvention;
 import static org.fabric3.gradle.plugin.core.util.ArtifactConverter.convert;
 
 /**
  *
  */
-public class PackagerPluginConvention {
+public class PackagerPluginConvention extends WarPluginConvention{
     public static final String FABRIC3_PACKAGER_CONVENTION = "fabric3Packager";
 
     private String systemConfig;
@@ -75,6 +78,11 @@ public class PackagerPluginConvention {
     private Set<Artifact> contributions = new HashSet<>();
     private Set<Project> projectContributions = new HashSet<>();
     private Set<ConfigFile> configFiles = new HashSet<>();
+    private MetaClass metaClass;
+
+    public PackagerPluginConvention(Project project) {
+        super(project);
+    }
 
     public String getRuntimeVersion() {
         return runtimeVersion;
@@ -190,6 +198,30 @@ public class PackagerPluginConvention {
 
     public void setSystemConfig(String systemConfig) {
         this.systemConfig = systemConfig;
+    }
+
+
+    public Object getProperty(String property) {
+        return getMetaClass().getProperty(this, property);
+    }
+
+    public void setProperty(String property, Object newValue) {
+        getMetaClass().setProperty(this, property, newValue);
+    }
+
+    public Object invokeMethod(String name, Object args) {
+        return getMetaClass().invokeMethod(this, name, args);
+    }
+
+    public MetaClass getMetaClass() {
+        if (metaClass == null) {
+            metaClass = InvokerHelper.getMetaClass(getClass());
+        }
+        return metaClass;
+    }
+
+    public void setMetaClass(MetaClass metaClass) {
+        this.metaClass = metaClass;
     }
 
 }

@@ -44,7 +44,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 
@@ -95,7 +97,7 @@ public class Package extends War {
     protected void copy() {
         init();
         try {
-
+            setExtension("war");
             File buildDirectory = getProject().getBuildDir();
             stagingDirectory = new File(buildDirectory, "f3");
             stagingDirectory.mkdirs();
@@ -108,8 +110,8 @@ public class Package extends War {
 
             File extensionsJar = createExtensionsArchive(extensionsDirectory, stagingDirectory);
 
-            File nodeJar = resolve(new DefaultArtifact(FABRIC3_GROUP, "fabric3-node", null, FABRIC3_VERSION));
-            File nodeExtensionsJar = resolve(new DefaultArtifact(FABRIC3_GROUP, "fabric3-node-extensions", null, FABRIC3_VERSION));
+            File nodeJar = resolve(new DefaultArtifact(FABRIC3_GROUP, "fabric3-node", "jar", FABRIC3_VERSION));
+            File nodeExtensionsJar = resolve(new DefaultArtifact(FABRIC3_GROUP, "fabric3-node-extensions", "jar", FABRIC3_VERSION));
 
             getWebInf().into("lib").from(extensionsJar, nodeJar, nodeExtensionsJar);
 
@@ -140,11 +142,13 @@ public class Package extends War {
 
     private File createExtensionsArchive(File extensionsDirectory, File libDirectory) throws IOException {
         File archive = new File(libDirectory, F3_EXTENSIONS_JAR);
+        Set<String> names = getClasspathFileNames();
         try (OutputStream os = new BufferedOutputStream(new FileOutputStream(archive));
              JarOutputStream jarStream = new JarOutputStream(os)) {
 
             for (File file : extensionsDirectory.listFiles()) {
-                if (!file.getName().endsWith(".jar")) {
+                if (!file.getName().endsWith(".jar") || names.contains(file.getName())) {
+                    // skip if not a jar or the library is included in the web app classpath (WEB-INF/lib)
                     continue;
                 }
                 JarEntry entry = new JarEntry(file.getName());
@@ -157,17 +161,17 @@ public class Package extends War {
     }
 
     /**
-     * Cleans the runtime directories.
+     * Returns the names of files on the classpath.
      *
-     * @param imageDir root runtime image
+     * @return the names of files on the classpath
      */
-    private void cleanRuntimes(File imageDir) throws IOException {
-        File runtimes = new File(imageDir, "runtimes");
-        for (File file : runtimes.listFiles()) {
-            if (file.isDirectory() && !convention.getContributionTarget().equals(file.getName())) {
-                FileHelper.forceDelete(file);
-            }
+    private Set<String> getClasspathFileNames() {
+        Set<File> classpath = getClasspath().getFiles();
+        Set<String> names = new HashSet<>();
+        for (File file : classpath) {
+            names.add(file.getName());
         }
+        return names;
     }
 
     private void installExtensions() throws IOException {
