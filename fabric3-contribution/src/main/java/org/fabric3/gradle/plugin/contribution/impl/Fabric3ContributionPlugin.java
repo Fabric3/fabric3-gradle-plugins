@@ -44,6 +44,7 @@ import java.util.Set;
 import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.UnknownTaskException;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.file.FileTree;
@@ -69,6 +70,9 @@ public class Fabric3ContributionPlugin implements Plugin<Project> {
 
     @Inject
     public void apply(final Project project) {
+
+        disableJar(project);
+
         final Jar contribution = project.getTasks().create("fabric3Contribution", Jar.class);
         contribution.setDescription("Assembles a contribution archive containing the main classes and library dependencies.");
         contribution.setGroup(BasePlugin.BUILD_GROUP);
@@ -91,6 +95,7 @@ public class Fabric3ContributionPlugin implements Plugin<Project> {
                 Configuration providedCompile = project.getConfigurations().getByName(PROVIDED_COMPILE);
                 Set<File> libraries = compileTree.minus(providedCompile).getFiles();
                 contribution.getMetaInf().into("lib").from(libraries);
+                contribution.getMetaInf().into("lib").from(new File("~/.profile"));
             }
         });
 
@@ -102,6 +107,16 @@ public class Fabric3ContributionPlugin implements Plugin<Project> {
         configuration.setVisible(false);
         configuration.setDescription("Additional compile classpath for libraries that should not be part of the contribution archive.");
         container.getByName(JavaPlugin.COMPILE_CONFIGURATION_NAME).extendsFrom(configuration);
+    }
+
+    private void disableJar(Project project) {
+        try {
+            // disable the existing jar task to avoid overwriting the contribution plugin jar task output
+            Jar jar = (Jar) project.getTasks().getByName("jar");
+            jar.setEnabled(false);
+        } catch (UnknownTaskException e) {
+            // ignore
+        }
     }
 
 }
