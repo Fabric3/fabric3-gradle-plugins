@@ -44,9 +44,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 
@@ -142,12 +140,11 @@ public class Package extends War {
 
     private File createExtensionsArchive(File extensionsDirectory, File libDirectory) throws IOException {
         File archive = new File(libDirectory, F3_EXTENSIONS_JAR);
-        Set<String> names = getClasspathFileNames();
         try (OutputStream os = new BufferedOutputStream(new FileOutputStream(archive));
              JarOutputStream jarStream = new JarOutputStream(os)) {
 
             for (File file : extensionsDirectory.listFiles()) {
-                if (!file.getName().endsWith(".jar") || names.contains(file.getName())) {
+                if (!file.getName().endsWith(".jar")) {
                     // skip if not a jar or the library is included in the web app classpath (WEB-INF/lib)
                     continue;
                 }
@@ -158,20 +155,6 @@ public class Package extends War {
             jarStream.flush();
         }
         return archive;
-    }
-
-    /**
-     * Returns the names of files on the classpath.
-     *
-     * @return the names of files on the classpath
-     */
-    private Set<String> getClasspathFileNames() {
-        Set<File> classpath = getClasspath().getFiles();
-        Set<String> names = new HashSet<>();
-        for (File file : classpath) {
-            names.add(file.getName());
-        }
-        return names;
     }
 
     private void installExtensions() throws IOException {

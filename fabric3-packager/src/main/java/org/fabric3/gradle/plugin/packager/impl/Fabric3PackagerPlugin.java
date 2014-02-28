@@ -79,9 +79,6 @@ public class Fabric3PackagerPlugin implements Plugin<Project> {
         zip.setDescription("Packages a Fabric3 node runtime image.");
         zip.setGroup(BasePlugin.BUILD_GROUP);
 
-        JavaPluginConvention javaConvention = project.getConvention().getPlugin(JavaPluginConvention.class);
-
-        zip.from(javaConvention.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME).getOutput());
         Configuration runtimeConfiguration = project.getConfigurations().getByName("runtime");
         ArchivePublishArtifact artifact = new ArchivePublishArtifact(zip);
         runtimeConfiguration.getArtifacts().add(artifact);

@@ -200,6 +200,13 @@ public class PackagerPluginConvention extends WarPluginConvention{
         this.systemConfig = systemConfig;
     }
 
+    public String webAppDirName() {
+        return super.getWebAppDirName();
+    }
+
+    public void webAppDirName(String name) {
+        super.setWebAppDirName(name);
+    }
 
     public Object getProperty(String property) {
         return getMetaClass().getProperty(this, property);
