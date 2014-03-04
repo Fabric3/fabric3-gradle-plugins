@@ -28,7 +28,9 @@ configure(distributions()) {
     dependencies {
         compile gradleApi()
 
-        compile group: 'org.eclipse.aether', name: 'aether-api', version: aetherVersion
+        compile group: 'org.eclipse.aether', name: 'aether-api', version: aetherVersion     {
+            exclude group: 'foo'
+        }
         compile group: 'org.eclipse.aether', name: 'aether-util', version: aetherVersion
         compile group: 'org.eclipse.aether', name: 'aether-impl', version: aetherVersion
         compile group: 'org.eclipse.aether', name: 'aether-connector-basic', version: aetherVersion
