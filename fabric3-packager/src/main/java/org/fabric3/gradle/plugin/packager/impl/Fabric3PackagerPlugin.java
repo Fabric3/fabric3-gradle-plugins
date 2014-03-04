@@ -130,7 +130,6 @@ public class Fabric3PackagerPlugin implements Plugin<Project> {
 
     private void addDefaultExtensions(PackagerPluginConvention convention) {
         convention.extension(Constants.FABRIC3_GROUP + ":" + "fabric3-databinding-json" + ":" + Constants.FABRIC3_VERSION);
-        convention.extension(Constants.FABRIC3_GROUP + ":" + "fabric3-node-servlet" + ":" + Constants.FABRIC3_VERSION);
     }
 
     private void disableJar(Project project) {
