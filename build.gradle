@@ -1,5 +1,15 @@
 /**
- * Build for Fabric3 Gradle plugins
+ * Build for Fabric3 Gradle plugins.
+ * <p/>
+ * By default, deploy project binaries, Javadoc and sources will be installed in the local Maven repo. To only build binaries and skip generating Javadoc and
+ * source archives, pass the <code>skipSources<code> parameter to Gradle: gradlew -PskipSources
+ * <p/>
+ * To deploy to the CodeHaus Nexus snapshot repository, execute the 'uploadArchives' task. To deploy to the CodeHaus Nexus release staging repository,
+ * change the version and execute the 'uploadArchives' task.
+ * <p/>
+ * Note the 'uploadArchives' tasks requires a gradle.properties file to be present containing private key information and authentication parameters
+ * (codehausUsername and codehausPassword).
+
  */
 project.description = 'Fabric3 Gradle plugins'
 
@@ -13,17 +23,18 @@ allprojects {
 
 }
 
-def distributions() {
+def deployProjects() {
     // define projects that are distributions, i.e. they contain source files; project parent directories will be ignored
     return subprojects.findAll { new File(it.projectDir, "src").exists() }
 }
 
-configure(distributions()) {
+configure(deployProjects()) {
+    group = pluginGroup
+    def releaseBuild = !version.endsWith('SNAPSHOT');
+
     apply plugin: 'java'
     apply plugin: 'maven'
     apply plugin: 'signing'
-
-    group = 'org.codehaus.fabric3.gradle'
 
     dependencies {
         compile gradleApi()
@@ -40,36 +51,77 @@ configure(distributions()) {
         testCompile 'junit:junit:4.5'
     }
 
+    if (project.hasProperty("skipSources")) {
+        return
+    }
+
     task sourcesJar(type: Jar) {
-        classifier = 'sources'
+        classifier 'sources'
         from sourceSets.main.allSource
     }
 
     task docJar(type: Jar, dependsOn: javadoc) {
-        classifier = 'docs'
+        classifier 'javadoc'
         from javadoc.destinationDir
     }
 
     artifacts {
+        archives jar
         archives sourcesJar
         archives docJar
     }
 
-    uploadArchives {
-        repositories {
-            mavenDeployer {
-//                repository(url: 'file:./maven')
+    install.repositories.mavenInstaller.pom.whenConfigured { pom ->
+        pom.project { project ->
+            scm {
+                url 'scm:git@github.com:Fabric3/fabric3-gradle-plugins.git'
+                connection 'scm:git@github.com:Fabric3/fabric3-gradle-plugins.git'
+                developerConnection 'scm:git@github.com:Fabric3/fabric3-gradle-plugins.git'
+            }
+
+            licenses {
+                license {
+                    name 'GNU + Classpath Exception'
+                    url 'http://www.fabric3.org/license.html'
+                    distribution 'repo'
+                }
+            }
+
+            developers {
+                developer {
+                    id 'fabric3'
+                    name 'Fabric3 Project'
+                }
             }
         }
     }
 
-    signing {
-        required {
-            !version.endsWith('SNAPSHOT') && gradle.taskGraph.hasTask('uploadArchives')
-        }
-        sign configurations.archives
-    }
+    uploadArchives {
+        repositories {
+            if (releaseBuild) {
+                mavenDeployer {
+                    beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
 
+                    repository(url: "https://nexus.codehaus.org/service/local/staging/deploy/maven2/") {
+                        authentication(userName: codehausUsername, password: codehausPassword)
+                    }
+
+                }
+            } else {
+                mavenDeployer {
+                    beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+                    repository(url: "https://nexus.codehaus.org/content/repositories/snapshots/") {
+                        authentication(userName: codehausUsername, password: codehausPassword)
+                    }
+                }
+            }
+        }
+        signing {
+            sign configurations.archives
+        }
+
+    }
 
 }
 
