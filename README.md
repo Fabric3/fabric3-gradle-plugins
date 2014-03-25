@@ -11,5 +11,5 @@ Requirements are JDK 7.
 
 To build the source, execute the Gradle script, e.g. on *Nix:
 
-./gradlew clean assemble install
+./gradlew 
 
