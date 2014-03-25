@@ -51,22 +51,16 @@ configure(deployProjects()) {
         testCompile 'junit:junit:4.5'
     }
 
-    jar {
-        baseName "fabric3-${baseName}"
-    }
-
     if (project.hasProperty("skipSources")) {
         return
     }
 
     task sourcesJar(type: Jar) {
-        baseName "fabric3-${baseName}"
         classifier 'sources'
         from sourceSets.main.allSource
     }
 
     task docJar(type: Jar, dependsOn: javadoc) {
-        baseName "fabric3-${baseName}"
         classifier 'javadoc'
         from javadoc.destinationDir
     }
@@ -132,12 +126,12 @@ configure(deployProjects()) {
 }
 
 def plugins() {
-    return subprojects.findAll { project -> !project.name.startsWith('plugin-core') }
+    return subprojects.findAll { project -> !project.name.startsWith('fabric3-plugin-core') }
 }
 
 configure(plugins()) {
     dependencies {
-        compile project(':plugin-core')
+        compile project(':fabric3-plugin-core')
     }
 }
 

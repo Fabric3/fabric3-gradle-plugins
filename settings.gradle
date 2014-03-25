@@ -1,3 +1,5 @@
 rootProject.name = 'fabric3-gradle-plugins'
 
 include ':plugin-core', ':contribution', ':assembly' , ':packager',  ':distribution'
+rootProject.children.each {
+    it.name = "fabric3-" + it.name }
