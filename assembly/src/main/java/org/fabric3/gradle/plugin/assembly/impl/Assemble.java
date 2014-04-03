@@ -186,23 +186,21 @@ public class Assemble extends Zip {
         for (Project project : convention.getProjectContributions()) {
             progressLogger.progress("Installing " + project.getName());
             File[] files = new File(project.getBuildDir() + File.separator + "libs").listFiles();
-            File source;
+            File source = null;
             if (files == null || files.length == 0) {
                 throw new GradleException("Archive not found for contribution project: " + project.getName());
             } else if (files.length > 1) {
                 // More than one archive. Check if a WAR is produced and use that as sometimes the JAR task may not be disabled in a webapp project, resulting
                 // in multiple artifacts.
-                int war = -1;
                 for (File file : files) {
                     if (file.getName().endsWith(".war")) {
-                        war++;
+                        source = file;
                         break;
                     }
                 }
-                if (war == -1) {
+                if (source == null) {
                     throw new GradleException("Contribution project has multiple library archives: " + project.getName());
                 }
-                source = files[war];
             } else {
                 source = files[0];
             }
