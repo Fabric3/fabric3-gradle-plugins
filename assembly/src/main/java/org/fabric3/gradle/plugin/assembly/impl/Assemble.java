@@ -164,7 +164,7 @@ public class Assemble extends Zip {
                 targetDir = new File(imageDir, destination);
             }
             File target = new File(targetDir, source.getName());
-            target.mkdirs();
+            targetDir.mkdirs();
             FileHelper.copy(source, target);
         }
     }
