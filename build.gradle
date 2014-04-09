@@ -98,6 +98,10 @@ configure(deployProjects()) {
 
     uploadArchives {
         repositories {
+            if (!hasProperty('codehausUsername')) {
+                return;
+            }
+
             if (releaseBuild) {
                 mavenDeployer {
                     beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
