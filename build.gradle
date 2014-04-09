@@ -122,6 +122,9 @@ configure(deployProjects()) {
             }
         }
         signing {
+            if (!hasProperty('signing.keyId')) {
+                return;
+            }
             sign configurations.archives
         }
 
