@@ -41,6 +41,7 @@ import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
@@ -51,6 +52,9 @@ import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
 import org.fabric3.gradle.plugin.core.resolver.AetherBootstrap;
+import org.fabric3.gradle.plugin.core.stopwatch.NoOpStopWatch;
+import org.fabric3.gradle.plugin.core.stopwatch.StopWatch;
+import org.fabric3.gradle.plugin.core.stopwatch.StreamStopWatch;
 import org.fabric3.gradle.plugin.core.util.ConfigFile;
 import org.fabric3.gradle.plugin.core.util.FileHelper;
 import org.gradle.api.GradleException;
@@ -67,6 +71,7 @@ import static org.fabric3.gradle.plugin.core.Constants.FABRIC3_GROUP;
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public class Assemble extends Zip {
 
+    private StopWatch stopWatch;
     private ProgressLogger progressLogger;
     private File imageDir;
     private RepositorySystem system;
@@ -77,9 +82,15 @@ public class Assemble extends Zip {
     @Inject
     public Assemble(ProgressLoggerFactory progressLoggerFactory) {
         this.progressLogger = progressLoggerFactory.newOperation("fabric3Assembly");
+        if (Boolean.parseBoolean(System.getProperty("fabric3.performance"))) {
+            stopWatch = new StreamStopWatch("gradle", TimeUnit.MILLISECONDS, System.out);
+        } else {
+            stopWatch = new NoOpStopWatch();
+        }
     }
 
     protected void copy() {
+        stopWatch.start();
         init();
         try {
             installRuntime();
@@ -100,6 +111,8 @@ public class Assemble extends Zip {
             throw new GradleException(e.getMessage(), e);
         }
         super.copy();
+        stopWatch.stop();
+        stopWatch.flush();
     }
 
     private void init() {
@@ -118,6 +131,7 @@ public class Assemble extends Zip {
         imageDir = new File(buildDir, "image");
         imageDir.mkdirs();
         convention = (AssemblyPluginConvention) project.getConvention().getByName(AssemblyPluginConvention.FABRIC3_ASSEMBLY_CONVENTION);
+        stopWatch.split("Fabric3 Assembly init");
     }
 
     /**
@@ -183,6 +197,8 @@ public class Assemble extends Zip {
             FileHelper.copy(source, target);
         }
 
+        stopWatch.split("Fabric3 Assembly resolve and install contributions");
+
         for (Project project : convention.getProjectContributions()) {
             progressLogger.progress("Installing " + project.getName());
             File[] files = new File(project.getBuildDir() + File.separator + "libs").listFiles();
@@ -207,6 +223,7 @@ public class Assemble extends Zip {
             File target = new File(repository, source.getName());
             FileHelper.copy(source, target);
         }
+        stopWatch.split("Fabric3 Assembly install project contributions");
     }
 
     private void installDatasources() throws ArtifactResolutionException, IOException {
@@ -225,7 +242,7 @@ public class Assemble extends Zip {
             File target = new File(datasourceDir, source.getName());
             FileHelper.copy(source, target);
         }
-
+        stopWatch.split("Fabric3 Assembly resolve and extract datasource extensions");
     }
 
     private void installExtensions() throws IOException {
@@ -235,6 +252,7 @@ public class Assemble extends Zip {
             File source = resolve(artifact);
             FileHelper.copy(source, new File(extensionDir, source.getName()));
         }
+        stopWatch.split("Fabric3 Assembly resolve and copy extensions");
     }
 
     private void installProfiles() throws IOException {
@@ -242,12 +260,16 @@ public class Assemble extends Zip {
             progressLogger.progress("Installing " + profile.toString());
             FileHelper.extract(resolve(profile), imageDir);
         }
+        stopWatch.split("Fabric3 Assembly resolve and extract profiles");
     }
 
     private void installRuntime() throws IOException {
         progressLogger.progress("Installing the runtime");
         DefaultArtifact runtimeArtifact = new DefaultArtifact(FABRIC3_GROUP, "runtime-standalone", "bin", "zip", convention.getRuntimeVersion());
-        FileHelper.extract(resolve(runtimeArtifact), imageDir);
+        File resolved = resolve(runtimeArtifact);
+        stopWatch.split("Fabric3 Assembly resolve runtime distribution");
+        FileHelper.extract(resolved, imageDir);
+        stopWatch.split("Fabric3 Assembly extract runtime distribution");
     }
 
     private File resolve(Artifact artifact) {
