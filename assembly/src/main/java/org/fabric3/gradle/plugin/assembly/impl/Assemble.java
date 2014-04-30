@@ -94,6 +94,7 @@ public class Assemble extends Zip {
         init();
         try {
             installRuntime();
+            installShared();
             installProfiles();
             installExtensions();
             installDatasources();
@@ -253,6 +254,16 @@ public class Assemble extends Zip {
             FileHelper.copy(source, new File(extensionDir, source.getName()));
         }
         stopWatch.split("Fabric3 Assembly resolve and copy extensions");
+    }
+
+    private void installShared() throws IOException {
+        File hostDir = new File(imageDir, "host");
+        for (Artifact artifact : convention.getShared()) {
+            progressLogger.progress("Installing " + artifact.toString());
+            File source = resolve(artifact);
+            FileHelper.copy(source, new File(hostDir, source.getName()));
+        }
+        stopWatch.split("Fabric3 Assembly resolve and copy shared artifacts");
     }
 
     private void installProfiles() throws IOException {

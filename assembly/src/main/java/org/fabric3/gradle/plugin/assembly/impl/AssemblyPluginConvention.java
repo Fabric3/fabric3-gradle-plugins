@@ -72,6 +72,7 @@ public class AssemblyPluginConvention {
     private Set<Artifact> profiles = new HashSet<>();
     private Set<Artifact> exclusions = new HashSet<>();
     private Set<Artifact> datasources = new HashSet<>();
+    private Set<Artifact> shared = new HashSet<>();
     private Set<Artifact> contributions = new HashSet<>();
     private Set<Project> projectContributions = new HashSet<>();
     private Set<ConfigFile> configFiles = new HashSet<>();
@@ -98,6 +99,14 @@ public class AssemblyPluginConvention {
 
     public void setContributionTarget(String contributionTarget) {
         this.contributionTarget = contributionTarget;
+    }
+
+    public void shared(Map<String, String> extension) {
+        shared.add(convert(extension, "jar"));
+    }
+
+    public void shared(String extension) {
+        shared.add(new DefaultArtifact(extension));
     }
 
     public void extension(Map<String, String> extension) {
@@ -159,6 +168,10 @@ public class AssemblyPluginConvention {
 
     public Set<Project> getProjectContributions() {
         return projectContributions;
+    }
+
+    public Set<Artifact> getShared() {
+        return shared;
     }
 
     public Set<Artifact> getExtensions() {
