@@ -98,7 +98,8 @@ configure(deployProjects()) {
 
     uploadArchives {
         repositories {
-            if (!hasProperty('codehausUsername')) {
+            if (!project.hasProperty('codehausUsername')) {
+                println("Skipping upload artifacts as codehausUsername is not defined: "+ codehausUsername)
                 return;
             }
 
