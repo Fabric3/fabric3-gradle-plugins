@@ -49,6 +49,7 @@ import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.connector.basic.BasicRepositoryConnectorFactory;
 import org.eclipse.aether.impl.DefaultServiceLocator;
 import org.eclipse.aether.repository.LocalRepository;
+import org.eclipse.aether.repository.Proxy;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.spi.connector.RepositoryConnectorFactory;
 import org.eclipse.aether.spi.connector.transport.TransporterFactory;
@@ -101,7 +102,13 @@ public class AetherBootstrap {
             if (repository instanceof MavenArtifactRepository && !name.startsWith("MavenLocal")) {
                 MavenArtifactRepository mavenRepository = (MavenArtifactRepository) repository;
                 String url = mavenRepository.getUrl().toString();
-                RemoteRepository remoteRepository = new RemoteRepository.Builder(name, "default", url).build();
+                RemoteRepository.Builder builder = new RemoteRepository.Builder(name, "default", url);
+                String proxyHost = System.getProperty("http.proxyHost");
+                if (proxyHost == null) {
+                    int proxyPort = Integer.parseInt(System.getProperty("http.proxyPort", "8080"));
+                    builder.setProxy(new Proxy("http", proxyHost, proxyPort));
+                }
+                RemoteRepository remoteRepository = builder.build();
                 repositories.add(remoteRepository);
             }
         }
