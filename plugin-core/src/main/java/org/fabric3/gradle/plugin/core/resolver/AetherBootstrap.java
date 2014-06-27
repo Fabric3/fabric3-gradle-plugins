@@ -104,7 +104,7 @@ public class AetherBootstrap {
                 String url = mavenRepository.getUrl().toString();
                 RemoteRepository.Builder builder = new RemoteRepository.Builder(name, "default", url);
                 String proxyHost = System.getProperty("http.proxyHost");
-                if (proxyHost == null) {
+                if (proxyHost != null) {
                     int proxyPort = Integer.parseInt(System.getProperty("http.proxyPort", "8080"));
                     builder.setProxy(new Proxy("http", proxyHost, proxyPort));
                 }
