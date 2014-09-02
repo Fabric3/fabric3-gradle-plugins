@@ -44,6 +44,6 @@ public interface Constants {
 
     String FABRIC3_VERSION = "2.5.0-SNAPSHOT";
 
-    String FABRIC3_GROUP = "org.codehaus.fabric3";
+    String FABRIC3_GROUP = "org.fabric3";
 
 }
