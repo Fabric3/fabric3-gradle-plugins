@@ -190,7 +190,7 @@ public class Assemble extends Zip {
 
         for (Artifact artifact : convention.getContributions()) {
             progressLogger.progress("Installing " + artifact.toString());
-            ArtifactResult result = system.resolveArtifact(session, new ArtifactRequest(artifact, null, null));
+            ArtifactResult result = system.resolveArtifact(session, new ArtifactRequest(artifact, repositories, ""));
 
             File source = result.getArtifact().getFile();
 
@@ -238,7 +238,7 @@ public class Assemble extends Zip {
         datasourceDir.mkdirs();
         for (Artifact artifact : convention.getDatasources()) {
             progressLogger.progress("Installing " + artifact.toString());
-            ArtifactResult result = system.resolveArtifact(session, new ArtifactRequest(artifact, null, null));
+            ArtifactResult result = system.resolveArtifact(session, new ArtifactRequest(artifact, repositories, ""));
             File source = result.getArtifact().getFile();
             File target = new File(datasourceDir, source.getName());
             FileHelper.copy(source, target);
