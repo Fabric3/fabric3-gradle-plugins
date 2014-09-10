@@ -4,13 +4,13 @@
  * By default, deploy project binaries, Javadoc and sources will be installed in the local Maven repo. To only build binaries and skip generating Javadoc and
  * source archives, pass the <code>skipSources<code> parameter to Gradle: gradlew -PskipSources
  * <p/>
- * To deploy to the CodeHaus Nexus release staging repository, change the version and execute:
+ * To deploy to the Nexus release staging repository, change the version and execute:
  * <code>./gradlew -Pbuild=deploy -Dcom.sun.net.ssl.rsaPreMasterSecretFix=true</code>
  * after a full build has been run. Note the 'rsaPreMasterSecretFix' parameter is required as a workaround for this JDK bug:
  * https://bugs.openjdk.java.net/browse/JDK-8030806
  * <p/>
  * Note the 'uploadArchives' tasks requires a gradle.properties file to be present containing private key information and authentication parameters
- * (codehausUsername and codehausPassword).
+ * (sonatypeUsername and sonatypePassword).
 
  */
 project.description = 'Fabric3 Gradle plugins'
