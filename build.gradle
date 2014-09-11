@@ -27,6 +27,14 @@ if (ext.build == 'deploy') {
     defaultTasks 'clean', 'assemble', 'install'
 }
 
+if (!hasProperty('sonatypeUsername')) {
+   project.ext.sonatypeUsername = "undefined"
+}
+
+if (!hasProperty('sonatypePassword')) {
+    project.ext.sonatypePassword = "undefined"
+}
+
 allprojects {
     repositories {
         mavenLocal()
