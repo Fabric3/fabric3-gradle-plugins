@@ -4,7 +4,7 @@ import java.util.Map;
 
 /**
  * A stopwatch that measures elapsed time.
- * <p/>
+ *
  * Note implementations are not thread-safe.
  */
 public interface StopWatch {
@@ -17,8 +17,8 @@ public interface StopWatch {
     /**
      * Records a split elapsed time.
      *
-     * @param markers the markers to associate with the split, generally one or more identifiers that will be concatenated when {@link #flush()} is
-     *                called to output timings.
+     * @param markers the markers to associate with the split, generally one or more identifiers that will be concatenated when {@link #flush()} is called to
+     *                output timings.
      */
     void split(String... markers);
 

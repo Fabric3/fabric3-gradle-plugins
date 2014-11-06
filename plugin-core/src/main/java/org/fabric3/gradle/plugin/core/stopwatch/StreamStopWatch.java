@@ -6,7 +6,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * A stopwatch that sends timing measurements to an output stream.
- * <p/>
+ *
  * Note that this implementation does not close the provided stream; clients are responsible for closing the stream.
  */
 public class StreamStopWatch extends AbstractStopWatch {

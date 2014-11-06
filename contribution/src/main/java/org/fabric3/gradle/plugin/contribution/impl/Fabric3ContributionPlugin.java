@@ -59,7 +59,7 @@ import org.gradle.api.tasks.bundling.Jar;
 
 /**
  * Packages a Gradle project as a Fabric3 JAR contribution.
- * <p/>
+ *
  * This plugin packages dependencies specified with the <code>compile</code> scope (including transitive dependencies) in the archive <code>META-INF/lib</code>
  * directory.  The plugin also adds the dependency scope <code>providedCompile</code> to the project configuration. Dependencies specified with the
  * <code>providedCompile</code> scope will be placed on the project compile classpath but will not be packaged in the archive <code>META-INF/lib</code>
