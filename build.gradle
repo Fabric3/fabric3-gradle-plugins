@@ -55,6 +55,9 @@ configure(deployProjects()) {
     apply plugin: 'maven'
     apply plugin: 'signing'
 
+    sourceCompatibility = 1.7
+    targetCompatibility = 1.7
+
     dependencies {
         compile gradleApi()
 
