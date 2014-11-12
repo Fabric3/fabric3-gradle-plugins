@@ -23,7 +23,7 @@ if (hasProperty('build')) {
     ext.build = 'default';
 }
 if (ext.build == 'deploy') {
-    defaultTasks 'uploadArchives'
+    defaultTasks 'assemble', 'install', 'uploadArchives'
 } else {
     defaultTasks 'clean', 'assemble', 'install'
 }
