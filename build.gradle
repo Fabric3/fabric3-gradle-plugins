@@ -4,6 +4,8 @@
  * By default, deploy project binaries, Javadoc and sources will be installed in the local Maven repo. To only build binaries and skip generating Javadoc and
  * source archives, pass the <code>skipSources<code> parameter to Gradle: gradlew -PskipSources
  *
+ * Prior to release, update the {@link org.fabric3.gradle.plugin.core.Constants#FABRIC3_VERSION}.
+ *
  * To deploy to the Nexus release staging repository, change the version and execute:
  * <code>./gradlew -Pbuild=deploy -Dcom.sun.net.ssl.rsaPreMasterSecretFix=true</code>
  * after a full build has been run. Note the 'rsaPreMasterSecretFix' parameter is required as a workaround for this JDK bug:
