@@ -23,7 +23,7 @@ if (hasProperty('build')) {
     ext.build = 'default';
 }
 if (ext.build == 'deploy') {
-    defaultTasks 'assemble', 'install', 'uploadArchives'
+    defaultTasks 'uploadArchives'
 } else {
     defaultTasks 'clean', 'assemble', 'install'
 }
@@ -123,11 +123,38 @@ configure(deployProjects()) {
     uploadArchives {
         repositories {
             if (releaseBuild) {
+
                 mavenDeployer {
                     beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
 
                     repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2") {
                         authentication(userName: sonatypeUsername, password: sonatypePassword)
+                    }
+
+                    pom.project {
+                        url 'http://fabric3.org'
+                        name 'Fabric3 Plugins'
+                        description 'Fabric3 Plugins'
+                        scm {
+                            url 'scm:git@github.com:Fabric3/fabric3-gradle-plugins.git'
+                            connection 'scm:git@github.com:Fabric3/fabric3-gradle-plugins.git'
+                            developerConnection 'scm:git@github.com:Fabric3/fabric3-gradle-plugins.git'
+                        }
+
+                        licenses {
+                            license {
+                                name 'Apache 2'
+                                url 'http://www.fabric3.org/license.html'
+                                distribution 'repo'
+                            }
+                        }
+
+                        developers {
+                            developer {
+                                id 'fabric3'
+                                name 'Fabric3 Project'
+                            }
+                        }
                     }
 
                 }
