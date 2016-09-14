@@ -21,7 +21,7 @@ package org.fabric3.gradle.plugin.core;
  */
 public interface Constants {
 
-    String FABRIC3_VERSION = "3.0.0-SNAPSHOT";
+    String FABRIC3_VERSION = "3.0.0";
 
     String FABRIC3_GROUP = "org.fabric3";
 
