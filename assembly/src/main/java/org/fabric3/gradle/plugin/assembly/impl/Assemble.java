@@ -36,6 +36,7 @@ import org.fabric3.gradle.plugin.core.stopwatch.StopWatch;
 import org.fabric3.gradle.plugin.core.stopwatch.StreamStopWatch;
 import org.fabric3.gradle.plugin.core.util.ConfigFile;
 import org.fabric3.gradle.plugin.core.util.FileHelper;
+import org.fabric3.gradle.plugin.core.util.ProgressLoggerCompat;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.bundling.Zip;
@@ -96,8 +97,8 @@ public class Assemble extends Zip {
     }
 
     private void init() {
-        progressLogger.setDescription("Fabric3 assembly plugin");
-        progressLogger.setLoggingHeader("Fabric3 assembly plugin");
+        ProgressLoggerCompat.setDescription(progressLogger, "Fabric3 assembly plugin");
+        ProgressLoggerCompat.setLoggingHeader(progressLogger, "Fabric3 assembly plugin");
         progressLogger.started("STARTING");
 
         Project project = getProject();

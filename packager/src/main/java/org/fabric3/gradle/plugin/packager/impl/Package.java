@@ -39,6 +39,7 @@ import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
 import org.fabric3.gradle.plugin.core.resolver.AetherBootstrap;
 import org.fabric3.gradle.plugin.core.util.FileHelper;
+import org.fabric3.gradle.plugin.core.util.ProgressLoggerCompat;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.bundling.War;
@@ -100,8 +101,8 @@ public class Package extends War {
     }
 
     private void init() {
-        progressLogger.setDescription("Fabric3 packager plugin");
-        progressLogger.setLoggingHeader("Fabric3 packager plugin");
+        ProgressLoggerCompat.setDescription(progressLogger, "Fabric3 packager plugin");
+        ProgressLoggerCompat.setLoggingHeader(progressLogger, "Fabric3 packager plugin");
         progressLogger.started("STARTING");
 
         Project project = getProject();
